@@ -2,19 +2,19 @@ package com.umaplay.androidscreencast;
 
 import com.android.ddmlib.AndroidDebugBridge;
 import com.android.ddmlib.IDevice;
-import com.umaplay.androidscreencast.ui.DeviceListDialog;
+import com.umaplay.androidscreencast.ui.Dialogs;
 import com.umaplay.androidscreencast.ui.scene.DeviceScene;
 import com.umaplay.androidscreencast.ui.scene.LoadingScene;
+import com.umaplay.androidscreencast.util.DeviceListHelper;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
-import javax.imageio.stream.ImageInputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class Main extends Application implements DeviceListHelper.DeviceListListener, ScreenCaptureThread.ScreenCaptureListener {
 
-    private Stage mWindow;
+    private Stage mStage;
     private IDevice mDevice;
     private LoadingScene mLoadingScene;
     private ScreenCaptureThread mScreenCaptureThread;
@@ -23,22 +23,19 @@ public class Main extends Application implements DeviceListHelper.DeviceListList
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        mWindow = primaryStage;
-        mWindow.setTitle("Android Screencast");
-        mWindow.setResizable(false);
-        mWindow.setWidth(400);
-        mWindow.setHeight(600);
-
+        mStage = primaryStage;
+        mStage.setTitle("Android Screencast");
+        mStage.setResizable(false);
+        mStage.setWidth(400);
+        mStage.setHeight(600);
 
 
         mLoadingScene = new LoadingScene();
         mDeviceScene = new DeviceScene();
 
-//        Parent root = FXMLLoader.load(getClass().getResource("ui/Main.fxml"));
 
-
-        mWindow.setScene(mLoadingScene);
-        mWindow.show();
+        mStage.setScene(mLoadingScene);
+        mStage.show();
 
 
         DeviceListHelper.RefreshList(AndroidDebugBridge.createBridge(), this);
@@ -48,12 +45,8 @@ public class Main extends Application implements DeviceListHelper.DeviceListList
 
     @Override
     public void stop() throws Exception {
-
-//        if(injector != null)
-//            injector.close();
-
         if(mScreenCaptureThread != null)
-            mScreenCaptureThread.join();
+            mScreenCaptureThread.kill();
 
         AndroidDebugBridge.terminate();
         super.stop();
@@ -66,7 +59,7 @@ public class Main extends Application implements DeviceListHelper.DeviceListList
 
     @Override
     public void onLoadStart() {
-        mWindow.setScene(mLoadingScene);
+        mStage.setScene(mLoadingScene);
         mLoadingScene.progressText.setText("Retrieving device list...");
         mLoadingScene.progressBar.setVisible(true);
         mLoadingScene.button.setVisible(false);
@@ -74,7 +67,7 @@ public class Main extends Application implements DeviceListHelper.DeviceListList
 
     @Override
     public void onLoadEnd(AndroidDebugBridge bridge) {
-        mWindow.setScene(mLoadingScene);
+        mStage.setScene(mLoadingScene);
         mLoadingScene.progressBar.setVisible(false);
 
         IDevice[] devices = bridge.getDevices();
@@ -84,7 +77,7 @@ public class Main extends Application implements DeviceListHelper.DeviceListList
             mLoadingScene.progressText.setText("Connected to: " + mDevice.getSerialNumber());
         }
         else if(devices.length > 1) {
-            mDevice = DeviceListDialog.display(devices);
+            mDevice = Dialogs.DisplayDeviceList(devices);
             if(mDevice == null) {
                 mLoadingScene.progressText.setText("No device selected!");
                 mLoadingScene.button.setText("Try Again");
@@ -104,7 +97,7 @@ public class Main extends Application implements DeviceListHelper.DeviceListList
 
         if(mDevice != null) {
             mDeviceScene.setDevice(mDevice);
-            mWindow.setScene(mDeviceScene);
+            mStage.setScene(mDeviceScene);
 
             if(mScreenCaptureThread == null) {
                 mScreenCaptureThread = new ScreenCaptureThread(mDevice);
@@ -118,7 +111,7 @@ public class Main extends Application implements DeviceListHelper.DeviceListList
 
     @Override
     public void onLoadTimeout() {
-        mWindow.setScene(mLoadingScene);
+        mStage.setScene(mLoadingScene);
         mLoadingScene.progressText.setText("Failed to load devices. Timed out!");
         mLoadingScene.progressBar.setVisible(false);
         mLoadingScene.button.setText("Try again");
@@ -133,8 +126,8 @@ public class Main extends Application implements DeviceListHelper.DeviceListList
             double height = (size.height * factor) + 30;
             double width = size.width * factor;
 
-            mWindow.setWidth(width);
-            mWindow.setHeight(height);
+            mStage.setWidth(width);
+            mStage.setHeight(height);
             oldSize = size;
         }
 
