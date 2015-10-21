@@ -1,186 +1,113 @@
 package com.umaplay.androidscreencast.ui.scene;
 
 import com.android.ddmlib.IDevice;
-import com.android.ddmlib.IShellOutputReceiver;
 import com.umaplay.androidscreencast.ScreenCaptureThread;
+import com.umaplay.androidscreencast.util.Command;
 import javafx.embed.swing.SwingFXUtils;
-import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 
 
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
-import javafx.scene.input.SwipeEvent;
-import javafx.scene.paint.Color;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 public class DeviceScene extends Scene implements ScreenCaptureThread.ScreenCaptureListener {
-    private final Group layout;
-    private final ImageView imageView;
-    private final Canvas canvas;
-    private long pressedTime;
-    private double pressedX;
-    private double pressedY;
-    private boolean dragging = false;
-    private Dimension oldSize;
-    private double scaleDownFactor;
-    private double scaleUpFactor;
-    private IDevice device;
-
-//    public final ProgressBar progressBar;
-//    public final Label progressText;
-//    public final Button button;
+    private final Canvas mCanvas;
+    private Dimension mSize;
+    private IDevice mDevice;
+    private double mScaleDownFactor;
+    private double mScaleUpFactor;
+    private long _pressedTime;
+    private double _pressedX;
+    private double _pressedY;
+    private boolean _dragging;
 
     public DeviceScene() {
         super(new Group());
 
-        layout = (Group) this.getRoot();
-        imageView = new ImageView();
-        canvas = new Canvas();
-        layout.getChildren().add(canvas);
+        mCanvas = setupCanvas();
 
 
-        canvas.setOnMouseDragged(e -> {
-            dragging = true;
-        });
+        ((Group) this.getRoot()).getChildren().add(mCanvas);
+
+        mCanvas.requestFocus();
+    }
+
+    private Canvas setupCanvas() {
+        Canvas canvas = new Canvas();
+
+        //we don't have a proper dragged event that gives us start and end
+        //also, a click is fired at the end of what is considered a drag so we can't rely on the inbuilt event
+        //we have to create our own
 
         canvas.setOnMousePressed(e -> {
-            pressedX = e.getX() * scaleUpFactor;
-            pressedY = e.getY() * scaleUpFactor;
+            _pressedX = e.getX() * mScaleUpFactor;
+            _pressedY = e.getY() * mScaleUpFactor;
 
-            pressedTime = System.currentTimeMillis();
+            _pressedTime = System.currentTimeMillis();
+        });
+
+        canvas.setOnMouseDragged(e -> {
+            _dragging = true;
         });
 
         canvas.setOnMouseReleased(e -> {
-            double releasedX = e.getX() * scaleUpFactor;
-            double releasedY = e.getY() * scaleUpFactor;
+            canvas.requestFocus();
+
+            double releasedX = e.getX() * mScaleUpFactor;
+            double releasedY = e.getY() * mScaleUpFactor;
 
             String command;
-            if(dragging) {
-                long dragDuration = System.currentTimeMillis() - pressedTime;
-                command = String.format("input touchscreen swipe %s %s %s %s %s", pressedX, pressedY, releasedX, releasedY, dragDuration);
-            }
-            else {
+            if (_dragging) {
+                long dragDuration = System.currentTimeMillis() - _pressedTime;
+                command = String.format("input touchscreen swipe %s %s %s %s %s", _pressedX, _pressedY, releasedX, releasedY, dragDuration);
+            } else {
                 command = String.format("input touchscreen tap %s %s", releasedX, releasedY);
             }
 
             try {
-                device.executeShellCommand(command, new IShellOutputReceiver() {
-                    @Override
-                    public void addOutput(byte[] bytes, int i, int i1) {
-
-                    }
-
-                    @Override
-                    public void flush() {
-
-                    }
-
-                    @Override
-                    public boolean isCancelled() {
-                        return false;
-                    }
-                });
-            } catch (IOException e1) {
-                e1.printStackTrace();
+                Command.send(mDevice, command);
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
 
-            pressedTime = 0;
-            dragging = false;
-            pressedX = pressedY = 0;
+            _pressedTime = 0;
+            _dragging = false;
+            _pressedX = _pressedY = 0;
         });
 
-//        canvas.setOnMouseClicked(e -> {
-
-
-//            double x = e.getX() * scaleUpFactor;
-//            double y = e.getY() * scaleUpFactor;
-//
-//            System.out.println(String.format("Clicked:- %s : %s", x, y));
-//            try {
-//                device.executeShellCommand(String.format("input touchscreen tap %s %s", x, y), new IShellOutputReceiver() {
-//                    @Override
-//                    public void addOutput(byte[] bytes, int i, int i1) {
-//
-//                    }
-//
-//                    @Override
-//                    public void flush() {
-//
-//                    }
-//
-//                    @Override
-//                    public boolean isCancelled() {
-//                        return false;
-//                    }
-//                });
-//            } catch (IOException e1) {
-//                e1.printStackTrace();
-//            }
-//        });
-
-
-//        canvas.setOnMouseDragExited(e -> {
-//            if(dragging) {
-//                double dragEndX = e.getX() * scaleUpFactor;
-//                double dragEndY = e.getY() * scaleUpFactor;
-//
-//                try {
-//                    device.executeShellCommand(String.format("input touchscreen swipe %s %s %s %s %s", dragStartX, dragStartY, dragEndX, dragEndY, 100), new IShellOutputReceiver() {
-//                        @Override
-//                        public void addOutput(byte[] bytes, int i, int i1) {
-//
-//                        }
-//
-//                        @Override
-//                        public void flush() {
-//
-//                        }
-//
-//                        @Override
-//                        public boolean isCancelled() {
-//                            return false;
-//                        }
-//                    });
-//                } catch (IOException e1) {
-//                    e1.printStackTrace();
-//                }
-//            }
-//            dragging = false;
-//        });
+        return canvas;
     }
-
 
     @Override
     public void handleNewImage(Dimension size, BufferedImage image, boolean landscape) {
-        double height = size.height * scaleDownFactor;
-        double width = size.width * scaleDownFactor;
+        double height = size.height * mScaleDownFactor;
+        double width = size.width * mScaleDownFactor;
 
-        if(oldSize == null || !size.equals(oldSize)) {
-            scaleDownFactor = 700.0/size.height;
-            scaleUpFactor = size.height/700.0;
+        if(mSize == null || !size.equals(mSize)) {
+            mScaleDownFactor = 700.0/size.height;
+            mScaleUpFactor = size.height/700.0;
 
-            height = size.height * scaleDownFactor;
-            width = size.width * scaleDownFactor;
+            height = size.height * mScaleDownFactor;
+            width = size.width * mScaleDownFactor;
 
-            canvas.setWidth(width);
-            canvas.setHeight(height);
-            oldSize = size;
+            mCanvas.setWidth(width);
+            mCanvas.setHeight(height);
+            mSize = size;
         }
 
-        GraphicsContext gc = canvas.getGraphicsContext2D();
+        GraphicsContext gc = mCanvas.getGraphicsContext2D();
         WritableImage fxImage = new WritableImage(size.width, size.height);
         SwingFXUtils.toFXImage(image, fxImage);
         gc.drawImage(fxImage, 0, 0, width, height);
     }
 
     public void setDevice(IDevice device) {
-        this.device = device;
+        this.mDevice = device;
     }
 }
