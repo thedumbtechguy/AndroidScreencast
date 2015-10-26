@@ -2,7 +2,7 @@
 
 ![Android Screencast](https://github.com/frostymarvelous/AndroidScreencast/raw/master/screenshots/screencast.png)
 
-Android Screencast allows you to use control android device from your computer.
+Android Screencast allows you to control your android device from your computer.
 
 I needed to access my phone with a damaged screen so I wrote this as I couldn't find anything that fit
 my needs.
@@ -20,14 +20,30 @@ You need adb installed.
 
 Your device must be developer enabled and discoverable by adb.
 
+Tested on a device running 4.4.2
+
 ##Features
 
-Currently, it mirrors your screen and takes mouse input (clicks and swipes).
+- Screen mirroring (very low frame rate)
+- Simulated Clicks, Swipes and Long Presses using mouse input
+- Keyboard input
+
+###Special Keys
+- ESC : Back
+- F1 : Menu 
+- F2 : Back
+- F3 : Home
+- F10 : Power Button
+- F11 : Camera
+
+###Normal Keys
+- All text keys
+- Arrow keys
+- Enter, Backspace, Delete and Tab
+- Home, End, Page Up and Page Down
 
 ##Limitations
 
-Framerate is terrible. It works currently for my needs, but I plan on working on it.
+Frame rate is terrible. It works currently for my needs, but I plan on working on it.
 
-Does not take keyboard input yet. Not difficult to implement and will be the next feature implemented.
-
-It isn't robust as I cobbled it together in an afternoon of mork, but more work will be done to make it solid in due course.
+It isn't robust as I cobbled it together in an afternoon of work, but more work will be done to make it solid in due course.
