@@ -13,7 +13,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 public class Dialogs {
-    
+
     private static IDevice selectedDevice;
     public static IDevice DisplayDeviceList(IDevice[] devices) {
         Stage stage = new Stage();

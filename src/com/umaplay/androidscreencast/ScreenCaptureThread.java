@@ -76,7 +76,6 @@ public class ScreenCaptureThread extends Thread {
             }
         }
 
-
         RawImage rawImage = null;
         synchronized (device) {
             rawImage = device.getScreenshot();

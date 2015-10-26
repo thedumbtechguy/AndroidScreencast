@@ -112,7 +112,7 @@ public class Main extends Application implements DeviceListHelper.DeviceListList
     @Override
     public void onLoadTimeout() {
         mStage.setScene(mLoadingScene);
-        mLoadingScene.progressText.setText("Failed to load devices. Timed out!");
+        mLoadingScene.progressText.setText("Failed to load devices. Timed out! \nCheck if device is connected and adb is running.");
         mLoadingScene.progressBar.setVisible(false);
         mLoadingScene.button.setText("Try again");
         mLoadingScene.button.setOnAction(e -> { DeviceListHelper.RefreshList(AndroidDebugBridge.createBridge(), this); });
