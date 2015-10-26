@@ -65,10 +65,11 @@ public class Command {
     public static String getKeyEvent(KeyCode keyCode) {
         switch (keyCode){
             //special characters here
-            case ESCAPE:
-                return "4";
             case F1:
                 return "82"; //menu
+            case ESCAPE:
+            case F2:
+                return "4";
             case F3:
                 return "3"; // home
             case F10:
