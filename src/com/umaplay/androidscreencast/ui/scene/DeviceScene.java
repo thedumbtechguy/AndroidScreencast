@@ -13,6 +13,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.WritableImage;
 
 import java.awt.Dimension;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
@@ -59,19 +60,22 @@ public class DeviceScene extends Scene implements ScreenCaptureThread.ScreenCapt
         canvas.setOnMouseReleased(e -> {
             canvas.requestFocus();
 
+            long pressDuration = System.currentTimeMillis() - _pressedTime;
             double releasedX = e.getX() * mScaleUpFactor;
             double releasedY = e.getY() * mScaleUpFactor;
 
             String command;
             if (_dragging) {
-                long dragDuration = System.currentTimeMillis() - _pressedTime;
-                command = String.format("input touchscreen swipe %s %s %s %s %s", _pressedX, _pressedY, releasedX, releasedY, dragDuration);
+                command = String.format("input touchscreen swipe %s %s %s %s %s", _pressedX, _pressedY, releasedX, releasedY, pressDuration);
             } else {
-                command = String.format("input touchscreen tap %s %s", releasedX, releasedY);
+                if(pressDuration < 250)
+                    command = String.format("input touchscreen tap %s %s", releasedX, releasedY);
+                else //we emulate a long press
+                    command = String.format("input touchscreen swipe %s %s %s %s %s", releasedX, releasedY, releasedX, releasedY, pressDuration);
             }
 
             try {
-                Command.send(mDevice, command);
+                Command.sendToDroid(mDevice, command);
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -79,6 +83,20 @@ public class DeviceScene extends Scene implements ScreenCaptureThread.ScreenCapt
             _pressedTime = 0;
             _dragging = false;
             _pressedX = _pressedY = 0;
+        });
+
+        canvas.setOnKeyReleased(e -> {
+            String eventCode = Command.getKeyEvent(e.getCode());
+            try {
+                if(eventCode != null)
+                    Command.sendToDroid(mDevice, String.format("input keyevent %s", eventCode));
+                else
+                    Command.sendToDroid(mDevice, String.format("input text %s", e.getText()));
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+
+            //e.consume();
         });
 
         return canvas;
