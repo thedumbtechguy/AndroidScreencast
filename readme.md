@@ -1,4 +1,4 @@
-#Android Screencast
+# Android Screencast
 
 ![Android Screencast](https://github.com/frostymarvelous/AndroidScreencast/raw/master/screenshots/screencast.png)
 
@@ -14,7 +14,7 @@ I took pointers from the project and started this one in JavaFX.
 
 It does not require root but utilizes adb commands to send input to the device so should work.
 
-##Requirements
+## Requirements
 
 You need adb installed.
 
@@ -22,13 +22,13 @@ Your device must be developer enabled and discoverable by adb.
 
 Tested on a device running 4.4.2
 
-##Features
+## Features
 
 - Screen mirroring (very low frame rate)
 - Simulated Clicks, Swipes and Long Presses using mouse input
 - Keyboard input
 
-###Special Keys
+### Special Keys
 - ESC : Back
 - F1 : Menu 
 - F2 : Back
@@ -36,13 +36,13 @@ Tested on a device running 4.4.2
 - F10 : Power Button
 - F11 : Camera
 
-###Normal Keys
+### Normal Keys
 - All text keys
 - Arrow keys
 - Enter, Backspace, Delete and Tab
 - Home, End, Page Up and Page Down
 
-##Limitations
+## Limitations
 
 Frame rate is terrible. It works currently for my needs, but I plan on working on it.
 
